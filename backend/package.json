@@ -2,7 +2,7 @@
   "name": "tanglemonitor",
   "version": "1.0.0",
   "description": "Server engine and API for tanglemonitor.com",
-  "main": "tanglemonitor.js",
+  "main": "tanglemonitor-server.js",
   "dependencies": {
     "command-line-args": "^5.1.0",
     "compression": "^1.7.4",
@@ -21,11 +21,11 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node tanglemonitor.js"
+    "start": "node tanglemonitor-server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cyclux/tanglemonitor.git"
+    "url": "git+https://github.com/unioproject/tanglemonitor.git"
   },
   "keywords": [
     "IOTA",
@@ -39,7 +39,7 @@
   "author": "cyclux",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cyclux/tanglemonitor/issues"
+    "url": "https://github.com/unioproject/tanglemonitor/issues"
   },
-  "homepage": "https://github.com/cyclux/tanglemonitor#readme"
+  "homepage": "https://github.com/unioproject/tanglemonitor#readme"
 }
