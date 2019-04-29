@@ -105,7 +105,7 @@ Tanglemonitor is configured by the `config.js` file within the `backend` folder:
 | environments.zmqNodes.port           | ZMQ port of the node.                                                                                                                            | `5556`          |
 | environments.zmqNodes.api            | IRI API port of the ZMQ node (needed for sync checks).                                                                                           | `14265`         |
 | environments.zmqNodes.ssl            | `true` if IRI API port has ssl encryption (very likely if  IRI API port is 443).                                                                 | `false`         |
-| environments.zmqNodes.syncCheck      | Should the ZMQ node be sync checked? 'zmqNodes.api' needs to be specified. Also see 'nodeSyncDeltaThreshold'.                                    | `27017`         |
+| environments.zmqNodes.syncCheck      | Should the ZMQ node be sync checked? 'zmqNodes.api' needs to be specified. Also see 'nodeSyncDeltaThreshold'.                                    | `true`         |
 
 # SSL
 
