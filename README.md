@@ -6,7 +6,7 @@ _Visualization and detailed live metrics of the IOTA confirmation process._
 
 # Installation
 
-**Instructions for Linux (Ubuntu)**
+**Instructions for Linux (Ubuntu)**  
 First get sure you have the required programs installed:
 
 ```
@@ -46,13 +46,15 @@ nodejs tanglemonitor-server.js
 
 # pm2 - process manager
 
-If you intend to run Tanglemonitor as a service or several nets simultaneously, it is recommended to run it via a process manager, like pm2:
+If you intend to run Tanglemonitor as a service or several nets simultaneously, it is recommended to run it via a process manager, like pm2:  
+Simply install it via:
 
 ```
-sudo apt-get install pm2
+sudo npm install pm2 -g
+pm2 completion install
 ```
 
-Go into the backend folder and run:
+Go into the `backend` folder and run:
 
 ```
 pm2 start tanglemonitor-server.js
