@@ -2,7 +2,6 @@
 
 _Visualization and detailed live metrics of the IOTA confirmation process._
 
-
 > Tanglemonitor is part of the EDF funded **UNIO project**. Hence, you are now able to run your own instances. The goal of UNIO is, to combine three well established Tangle analytics tools (tangle.glumb, tanglebeat & tanglemonitor) into one collaborating project. For more details on this, please see the **annoucement** and our **proposal document**. Fully open sourcing Tanglemonitor and providing following instructions is just one of the first steps of our combined efforts project. Later on, we will provide a single repository with detailed instructions and a simple deployment process. For now however, if you like to deploy Tanglemonitor check out following preliminary instructions.
 
 # Installation
@@ -73,8 +72,6 @@ pm2 stop tanglemonitor-server
 
 > **Note:** For more information on [pm2](https://pm2.io/) visit their [documentation](https://pm2.io/doc/en/runtime/overview/?utm_source=pm2&utm_medium=website&utm_campaign=rebranding).
 
-
-
 # Configuration
 
 Tanglemonitor is configured by the `config.js` file within the `backend` folder:
@@ -107,8 +104,6 @@ Tanglemonitor is configured by the `config.js` file within the `backend` folder:
 | environments.zmqNodes.api            | IRI API port of the ZMQ node (needed for sync checks).                                                                                           | `14265`         |
 | environments.zmqNodes.ssl            | `true` if IRI API port has ssl encryption (very likely if  IRI API port is 443).                                                                 | `false`         |
 | environments.zmqNodes.syncCheck      | Should the ZMQ node be sync checked? 'zmqNodes.api' needs to be specified. Also see 'nodeSyncDeltaThreshold'.                                    | `27017`         |
-
-
 
 # SSL
 
