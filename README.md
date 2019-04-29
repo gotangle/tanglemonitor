@@ -5,9 +5,7 @@ _Visualization and detailed live metrics of the IOTA confirmation process._
 
 > Tanglemonitor is part of the EDF funded **UNIO project**. Hence, you are now able to run your own instances. The goal of UNIO is, to combine three well established Tangle analytics tools (tangle.glumb, tanglebeat & tanglemonitor) into one collaborating project. For more details on this, please see the **annoucement** and our **proposal document**. Fully open sourcing Tanglemonitor and providing following instructions is just one of the first steps of our combined efforts project. Later on, we will provide a single repository with detailed instructions and a simple deployment process. For now however, if you like to deploy Tanglemonitor check out following preliminary instructions.
 
-
-
-## Installation
+# Installation
 
 **Instructions for Linux (Ubuntu)**
 First get sure you have the required programs installed:
@@ -29,6 +27,8 @@ cd tanglemonitor/backend
 npm install
 ```
 
+> **Tip:** If you get permission errors from npm, try: `sudo chown -R $(whoami) ~/.npm`
+
 That's it, now you can start Tanglemonitor:
 
 ```
@@ -45,9 +45,7 @@ nodejs tanglemonitor-server.js
 
 > **Note:** Please see the [configuration section](#Configuration) for more details on how to run Tanglemonitor!
 
-
-
-## pm2 - process manager
+# pm2 - process manager
 
 If you intend to run Tanglemonitor as a service or several nets simultaneously, it is recommended to run it via a process manager, like pm2:
 
@@ -77,7 +75,7 @@ pm2 stop tanglemonitor-server
 
 
 
-## Configuration
+# Configuration
 
 Tanglemonitor is configured by the `config.js` file within the `backend` folder:
 
@@ -112,7 +110,7 @@ Tanglemonitor is configured by the `config.js` file within the `backend` folder:
 
 
 
-## SSL
+# SSL
 
 If SSL is enabled via the options `environments.apiServer.ssl: true` and `environments.socketioServer.ssl: true` you need to include your SSL certificates into the `backend/ssl` folder.
 The validity of the certificate has to match the host name specified at `webServer.domain`.
