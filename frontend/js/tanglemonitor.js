@@ -449,7 +449,10 @@ c.addEventListener(
                                 C. Time:\u00A0${txConfirmationTime}<br>
                                 Value:\u00A0\u00A0\u00A0${
                                   txOfMousePosition.value !== 0
-                                    ? ((txOfMousePosition.value / 1000000) * 100) / 100 + ' MIOTA'
+                                    ? (
+                                        ((txOfMousePosition.value / 1000000) * 100) /
+                                        100
+                                      ).toPrecision() + ' MIOTA'
                                     : 'Zero value transaction'
                                 }`;
         selectedAddress = txOfMousePosition.address;
