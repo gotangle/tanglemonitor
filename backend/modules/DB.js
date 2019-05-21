@@ -5,7 +5,7 @@ const MongoClient = require('mongodb').MongoClient;
 const _ = require('lodash');
 const loki = require('lokijs');
 const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-const config = require('../config');
+const config = require('../config/config');
 const Time = require('../modules/Time');
 
 let collection = {};

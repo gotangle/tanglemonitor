@@ -8,7 +8,7 @@ const https = require('https');
 const express = require('express');
 const helmet = require('helmet');
 
-const config = require('../config');
+const config = require('../config/config');
 const DB = require('../modules/DB');
 const Time = require('../modules/Time');
 

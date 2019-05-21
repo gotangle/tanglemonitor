@@ -63,7 +63,7 @@ You can stop it again with:
 
 # Configuration
 
-Tanglemonitor is configured by the `config.js` file within the `backend` folder:
+Tanglemonitor is configured by the `config.js` file within the `backend/config` folder:
 
 | Option                               | Description                                                                                                                                      | Default         |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |

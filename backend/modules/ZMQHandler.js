@@ -1,7 +1,6 @@
 /*eslint no-console: ['error', { allow: ['log', 'error'] }] */
 /* global console */
 
-//const config = require('../config');
 const Time = require('../modules/Time');
 const TXprocessor = require('../modules/TXprocessor');
 const DB = require('../modules/DB');
