@@ -10,9 +10,9 @@ module.exports = {
     Default: true */
     standalone: true,
 
-    /* If standalone is set true, specify a 'port' where the front-end will be reachable at (e.g. http://localhost:3000)
-    Default: 3000 */
-    port: 3000
+    /* If standalone is set true, specify a 'port' where the front-end will be reachable at (e.g. http://localhost:4000)
+    Default: 4000 */
+    port: 4000
   },
 
   /* The maximum recent transactions which can be fetched by the API endpoint 'getRecentTransactions'
