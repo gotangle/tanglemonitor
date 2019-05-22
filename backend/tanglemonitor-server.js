@@ -1,5 +1,6 @@
 /* eslint no-console: ['error', { allow: ['log', 'error'] }] */
 /* eslint security/detect-child-process: 0 */ // Safe, as we do not execute user input as child_process
+/* eslint security/detect-non-literal-fs-filename: 0 */ // Safe, as we do not execute user input as path variable
 /* global console */
 
 /* Start options
@@ -14,6 +15,8 @@ Give option to delete DB collections
 
 const commandLineArgs = require('command-line-args');
 const { fork } = require('child_process');
+const path = require('path');
+
 // Doku https://github.com/75lb/command-line-args/wiki
 // https://github.com/75lb/command-line-usage
 const config = require('./config/config');
@@ -53,7 +56,7 @@ DB.init(settings, statusDB => {
 
   // ZeroZMQ library tends to block the event loop on heavy load,
   // thus we spawn a fork and listen on message callbacks which are handled by the ZMQHandler
-  const ZMQ = fork('./modules/ZMQ.js');
+  const ZMQ = fork(path.resolve(__dirname, './modules/ZMQ.js'));
   ZMQ.send({ init: settings });
   ZMQ.on('message', msg => {
     ZMQHandler.process(msg);

@@ -1,5 +1,5 @@
 /*eslint no-console: ['error', { allow: ['log', 'error'] }] */
-
+/* eslint security/detect-non-literal-fs-filename: 0 */ // Safe, as we do not execute user input as path variable
 const fs = require('fs');
 const compression = require('compression');
 const bodyParser = require('body-parser');
@@ -7,6 +7,7 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const helmet = require('helmet');
+const path = require('path');
 
 const config = require('../config/config');
 const DB = require('../modules/DB');
@@ -15,9 +16,9 @@ const Time = require('../modules/Time');
 const apiToken = config.apiToken;
 
 const credentials = {
-  key: fs.readFileSync('./ssl/priv.pem', 'utf8'),
-  cert: fs.readFileSync('./ssl/crt.pem', 'utf8'),
-  ca: fs.readFileSync('./ssl/ca.pem', 'utf8')
+  key: fs.readFileSync(path.resolve(__dirname, '../ssl/priv.pem'), 'utf8'),
+  cert: fs.readFileSync(path.resolve(__dirname, '../ssl/crt.pem'), 'utf8'),
+  ca: fs.readFileSync(path.resolve(__dirname, '../ssl/ca.pem'), 'utf8')
 };
 
 // Setting up API server

@@ -1,9 +1,11 @@
 /*eslint no-console: ["error", { allow: ["log", "error"] }] */
+/* eslint security/detect-non-literal-fs-filename: 0 */ // Safe, as we do not execute user input as path variable
 
 const fs = require('fs');
 const express = require('express');
 const http = require('http');
 const https = require('https');
+const path = require('path');
 
 const config = require('../config/config');
 const Time = require('../modules/Time');
@@ -12,9 +14,9 @@ let socketIO;
 
 // Load ssl credentials
 const credentials = {
-  key: fs.readFileSync('./ssl/priv.pem', 'utf8'),
-  cert: fs.readFileSync('./ssl/crt.pem', 'utf8'),
-  ca: fs.readFileSync('./ssl/ca.pem', 'utf8')
+  key: fs.readFileSync(path.resolve(__dirname, '../ssl/priv.pem'), 'utf8'),
+  cert: fs.readFileSync(path.resolve(__dirname, '../ssl/crt.pem'), 'utf8'),
+  ca: fs.readFileSync(path.resolve(__dirname, '../ssl/ca.pem'), 'utf8')
 };
 
 module.exports = {
