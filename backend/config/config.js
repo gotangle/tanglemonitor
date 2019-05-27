@@ -24,7 +24,7 @@ module.exports = {
   logging: {
     /* Show constant info about ZMQ connection status to each node
     Default: false */
-    showZmqNodeStatus: false
+    showZmqNodeStatus: true
   },
 
   /* Database configuration */
@@ -93,11 +93,20 @@ module.exports = {
       Maximum simultaneous connections to ZMQ nodes is set with the option 'maxAmountZmqConnections'
       port = ZMQ port, the ssl option refers to the API port, for info on syncCheck see comment of 'nodeSyncDeltaThreshold' */
       zmqNodes: [
-        { host: 'localhost', port: 5556, api: 14265, ssl: false, syncCheck: true },
+        { host: 'tanglenode.de', port: 5556, api: 14265, ssl: false, syncCheck: true },
         { host: 'tanglebeat.com', port: 5556, api: 14265, ssl: false, syncCheck: false },
         { host: 'node06.iotatoken.nl', port: 5556, api: 14265, ssl: false, syncCheck: true },
-        { host: 'trinity.iota-tangle.io', port: 5556, api: 14265, ssl: true, syncCheck: true }
+        { host: 'trinity.iota-tangle.io', port: 5556, api: 14265, ssl: true, syncCheck: true },
+        { host: 'localhost', port: 5556, api: 14265, ssl: false, syncCheck: true }
       ]
+    },
+
+    {
+      netName: 'tanglebeat',
+      subdomain: '',
+      apiServer: { port: 4433, ssl: false },
+      socketioServer: { port: 4434, ssl: false },
+      zmqNodes: [{ host: 'tanglebeat', port: 5550, api: 14265, ssl: false, syncCheck: false }]
     },
 
     {

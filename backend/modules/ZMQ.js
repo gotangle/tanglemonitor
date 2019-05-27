@@ -6,6 +6,7 @@ const request = require('request');
 
 const config = require('../config/config');
 const Time = require('../modules/Time');
+const ZMQHandler = require('../modules/ZMQHandler');
 
 /*  Store ZMQ Socket objects */
 let zmqSockets = {};
@@ -17,14 +18,14 @@ const syncingCheckBufferSize = 10000;
 /* Stores current amount of connections to ZMQ nodes */
 let zmqNodesAmountConnected = 0;
 /* Maximum amount of parallel ZMQ connections (user defined via config) */
-let maxAmountZmqConnections;
+let maxAmountZmqConnections = 3;
 /* Store pool of ZMQ nodes (user defined via config) */
 let zmqNodes;
 /* Store the amount of ZMQ nodes specified by the user */
 let zmqNodesAmount = 0;
 /*  Threshold which determines at which delta between LMI and LSSMI
     the node should be considered "out-of-sync" (user defined via config) */
-let nodeSyncDeltaThreshold;
+let nodeSyncDeltaThreshold = 10;
 
 // Receive messages from main process
 // Primarily to initialize the ZMQ thread for now
@@ -107,18 +108,29 @@ const processZmqMsg = (zmqMsg, settings) => {
     if (Math.ceil(Math.log10(zmqTX.newTX.receivedAt + 1)) === 10) {
       zmqTX.newTX.receivedAt = zmqTX.newTX.receivedAt * 1000;
     }
-
     // Only process new TX if they were already received by another node recently
     // Or if there is only one ZMQ node specified by the user
-    if (syncingCheckBuffer.includes(zmqTX.newTX.hash) || zmqNodesAmount === 1) {
-      process.send({ type: 'cmd', call: 'newTX', zmqTX: zmqTX, settings: settings });
+    if (syncingCheckBuffer.includes(zmqTX.newTX.hash) || settings.netName === 'tanglebeat') {
+      if (settings.netName === 'tanglebeat') {
+        ZMQHandler.process({ type: 'cmd', call: 'newTX', zmqTX: zmqTX, settings: settings });
+      } else {
+        process.send({ type: 'cmd', call: 'newTX', zmqTX: zmqTX, settings: settings });
+      }
     } else {
       syncingCheckBuffer.unshift(zmqTX.newTX.hash);
     }
   } else if (zmqTX.newConf) {
-    process.send({ type: 'cmd', call: 'newConf', zmqTX: zmqTX, settings: settings });
+    if (settings.netName === 'tanglebeat') {
+      ZMQHandler.process({ type: 'cmd', call: 'newConf', zmqTX: zmqTX, settings: settings });
+    } else {
+      process.send({ type: 'cmd', call: 'newConf', zmqTX: zmqTX, settings: settings });
+    }
   } else if (zmqTX.newMile) {
-    process.send({ type: 'cmd', call: 'newMile', zmqTX: zmqTX, settings: settings });
+    if (settings.netName === 'tanglebeat') {
+      ZMQHandler.process({ type: 'cmd', call: 'newMile', zmqTX: zmqTX, settings: settings });
+    } else {
+      process.send({ type: 'cmd', call: 'newMile', zmqTX: zmqTX, settings: settings });
+    }
   } else {
     if (zmqTX && !zmqTX.default) console.log(Time.Stamp() + `zmqTX not recognized: ${zmqTX}`);
   }
@@ -128,8 +140,10 @@ module.exports = {
   init: (settings, callback) => {
     zmqNodes = settings.zmqNodes;
     zmqNodesAmount = settings.zmqNodes.length;
-    maxAmountZmqConnections = settings.maxAmountZmqConnections;
-    nodeSyncDeltaThreshold = settings.nodeSyncDeltaThreshold;
+    maxAmountZmqConnections = settings.maxAmountZmqConnections
+      ? settings.maxAmountZmqConnections
+      : 3;
+    nodeSyncDeltaThreshold = settings.nodeSyncDeltaThreshold ? settings.nodeSyncDeltaThreshold : 10;
 
     module.exports.nodeCheck(settings, { initialCall: true, loop: true });
 

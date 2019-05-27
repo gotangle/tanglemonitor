@@ -27,6 +27,7 @@ const ZMQHandler = require('./modules/ZMQHandler');
 const Time = require('./modules/Time');
 const WebSocket = require('./modules/WebSocket');
 const WebServer = require('./modules/WebServer');
+let ZMQ;
 
 // Define accepted CLI parameters
 const cliDefinitions = [{ name: 'net', alias: 'n', type: String }];
@@ -56,11 +57,19 @@ DB.init(settings, statusDB => {
 
   // ZeroZMQ library tends to block the event loop on heavy load,
   // thus we spawn a fork and listen on message callbacks which are handled by the ZMQHandler
-  const ZMQ = fork(path.resolve(__dirname, './modules/ZMQ.js'));
-  ZMQ.send({ init: settings });
-  ZMQ.on('message', msg => {
-    ZMQHandler.process(msg);
-  });
+  if (netEnvironment === 'tanglebeat') {
+    //ZMQ = fork(path.resolve(__dirname, './modules/NanoMsg.js'));
+    ZMQ = require('./modules/ZMQ');
+    ZMQ.init(settings, statusZMQ => {
+      console.log(statusZMQ);
+    });
+  } else {
+    ZMQ = fork(path.resolve(__dirname, './modules/ZMQ.js'));
+    ZMQ.send({ init: settings });
+    ZMQ.on('message', msg => {
+      ZMQHandler.process(msg);
+    });
+  }
 
   WebSocket.init(settings, statusWS => {
     console.log(statusWS);
