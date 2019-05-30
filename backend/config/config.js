@@ -24,7 +24,7 @@ module.exports = {
   logging: {
     /* Show constant info about ZMQ connection status to each node
     Default: false */
-    showZmqNodeStatus: true
+    showZmqNodeStatus: false
   },
 
   /* Database configuration */
@@ -106,6 +106,7 @@ module.exports = {
       subdomain: '',
       apiServer: { port: 4433, ssl: false },
       socketioServer: { port: 4434, ssl: false },
+      maxAmountZmqConnections: 1,
       zmqNodes: [{ host: 'tanglebeat', port: 5550, api: 14265, ssl: false, syncCheck: false }]
     },
 
