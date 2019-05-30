@@ -58,8 +58,7 @@ DB.init(settings, statusDB => {
   // ZeroZMQ library tends to block the event loop on heavy load,
   // thus we spawn a fork and listen on message callbacks which are handled by the ZMQHandler
   if (netEnvironment === 'tanglebeat') {
-    //ZMQ = fork(path.resolve(__dirname, './modules/NanoMsg.js'));
-    ZMQ = require('./modules/ZMQ');
+    ZMQ = require('./modules/ZMQ.js');
     ZMQ.init(settings, statusZMQ => {
       console.log(statusZMQ);
     });

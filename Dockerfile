@@ -5,13 +5,15 @@ WORKDIR /root/
 # Copy backend folder into docker image
 COPY . .
 
+WORKDIR /root/backend/
+
 RUN apk update && apk add --no-cache --virtual .build-deps \
   build-base \
   gcc \
   libunwind-dev \
   python2 \
   # Install tanglemonitor modules
-  && cd backend && npm install --no-optional --only=prod \
+  && npm install --no-optional --only=prod \
   # Install pm2
   && npm install pm2 -g \
   # Clean up
@@ -19,8 +21,6 @@ RUN apk update && apk add --no-cache --virtual .build-deps \
 
 # Expose ports needed to use Keymetrics.io
 EXPOSE 80 443 4433 4434 43554
-
-WORKDIR /root/backend/
 
 # Start pm2.json process file
 ENTRYPOINT ["pm2-runtime", "start", "pm2.json"]

@@ -1,7 +1,7 @@
 /*eslint no-console: ['error', { allow: ['log', 'error'] }] */
 /* global console */
 
-const zmq = require('zeromq');
+let zmqOrNanoMsg;
 const request = require('request');
 
 const config = require('../config/config');
@@ -26,6 +26,9 @@ let zmqNodesAmount = 0;
 /*  Threshold which determines at which delta between LMI and LSSMI
     the node should be considered "out-of-sync" (user defined via config) */
 let nodeSyncDeltaThreshold = 10;
+/* Store currently deployed netName. In a docker environment this will be "tanglebeat".
+   Subsequently nanomsg library will be utilized instead of ZMQ library */
+let netName = 'mainnet';
 
 // Receive messages from main process
 // Primarily to initialize the ZMQ thread for now
@@ -108,10 +111,11 @@ const processZmqMsg = (zmqMsg, settings) => {
     if (Math.ceil(Math.log10(zmqTX.newTX.receivedAt + 1)) === 10) {
       zmqTX.newTX.receivedAt = zmqTX.newTX.receivedAt * 1000;
     }
+
     // Only process new TX if they were already received by another node recently
     // Or if there is only one ZMQ node specified by the user
-    if (syncingCheckBuffer.includes(zmqTX.newTX.hash) || settings.netName === 'tanglebeat') {
-      if (settings.netName === 'tanglebeat') {
+    if (syncingCheckBuffer.includes(zmqTX.newTX.hash) || netName === 'tanglebeat') {
+      if (netName === 'tanglebeat') {
         ZMQHandler.process({ type: 'cmd', call: 'newTX', zmqTX: zmqTX, settings: settings });
       } else {
         process.send({ type: 'cmd', call: 'newTX', zmqTX: zmqTX, settings: settings });
@@ -120,13 +124,13 @@ const processZmqMsg = (zmqMsg, settings) => {
       syncingCheckBuffer.unshift(zmqTX.newTX.hash);
     }
   } else if (zmqTX.newConf) {
-    if (settings.netName === 'tanglebeat') {
+    if (netName === 'tanglebeat') {
       ZMQHandler.process({ type: 'cmd', call: 'newConf', zmqTX: zmqTX, settings: settings });
     } else {
       process.send({ type: 'cmd', call: 'newConf', zmqTX: zmqTX, settings: settings });
     }
   } else if (zmqTX.newMile) {
-    if (settings.netName === 'tanglebeat') {
+    if (netName === 'tanglebeat') {
       ZMQHandler.process({ type: 'cmd', call: 'newMile', zmqTX: zmqTX, settings: settings });
     } else {
       process.send({ type: 'cmd', call: 'newMile', zmqTX: zmqTX, settings: settings });
@@ -144,10 +148,14 @@ module.exports = {
       ? settings.maxAmountZmqConnections
       : 3;
     nodeSyncDeltaThreshold = settings.nodeSyncDeltaThreshold ? settings.nodeSyncDeltaThreshold : 10;
+    netName = settings.netName;
+
+    // If deployed in a docker environment utilize 'nanomsg' otherwise 'zeromq' library
+    zmqOrNanoMsg = netName === 'tanglebeat' ? require('nanomsg') : require('zeromq');
 
     module.exports.nodeCheck(settings, { initialCall: true, loop: true });
 
-    callback(Time.Stamp() + 'ZMQ listener started...');
+    callback(Time.Stamp() + `${netName === 'tanglebeat' ? 'NanoMsg' : 'ZMQ'} listener started...`);
   },
 
   nodeCheck: (settings, options) => {
@@ -291,17 +299,18 @@ module.exports = {
   connect: (node, settings) => {
     if (zmqNodesAmountConnected < maxAmountZmqConnections) {
       zmqNodesAmountConnected++;
-
-      zmqSockets[node.host] = zmq.socket('sub');
+      zmqSockets[node.host] = zmqOrNanoMsg.socket('sub');
       zmqSockets[node.host].connect(`tcp://${node.host}:${node.port}`);
       console.log(
         Time.Stamp() +
           `Connected to ${node.host} | Current ZMQ node connections: ${zmqNodesAmountConnected}`
       );
 
-      zmqSockets[node.host].subscribe('tx'); // New transactions
-      zmqSockets[node.host].subscribe('sn'); // New confirmed transactions
-      zmqSockets[node.host].subscribe('lmhs'); // New milestones
+      if (netName !== 'tanglebeat') {
+        zmqSockets[node.host].subscribe('tx'); // New transactions
+        zmqSockets[node.host].subscribe('sn'); // New confirmed transactions
+        zmqSockets[node.host].subscribe('lmhs'); // New milestones
+      }
 
       zmqSockets[node.host].on('close', close => {
         zmqNodesAmountConnected--;
@@ -315,7 +324,7 @@ module.exports = {
         module.exports.nodeCheck(settings, { initialCall: false, loop: false });
       });
 
-      zmqSockets[node.host].on('message', zmqMsg => {
+      zmqSockets[node.host].on(`${netName === 'tanglebeat' ? 'data' : 'message'}`, zmqMsg => {
         processZmqMsg(zmqMsg, settings);
       });
     }
