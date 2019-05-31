@@ -31,8 +31,12 @@ module.exports = {
   DB: {
     /* The standalone driver utilizes an in-memory DB (LokiJS). This DB is very fast but not suitable to store larger amounts of TX history.
     If you want to keep more than a few hours of TX history please consider to utilize a MongoDB instance.
-    Default: 'standalone', Alternative option: 'MongoDB' */
-    driver: 'standalone',
+
+    Currently MongoDB is the default as it is utilized as default with the docker deployment (which is considered the primary deployment method, utilizing tanglebeat as metric source)
+    If you do not have a MongoDB running or intend to run tanglemonitor standalone, please choose 'standalone' as driver.
+
+    Default: 'MongoDB', Alternative option: 'standalone' */
+    driver: 'MongoDB',
 
     /* Amount of minutes of Tangle tx history, which will be stored. If set to 0 all history of the transactions will be lost on restart.
     Non-persistence usually only makes sense in combination with 'standalone' DB driver.
@@ -41,9 +45,9 @@ module.exports = {
 
     /* Configuration only relevant if driver is set to 'MongoDB' */
     MongoDB: {
-      /* The DB host can also be on a remote location
-      Default: 'localhost' */
-      host: 'localhost',
+      /* The DB host can also be on a remote location or localhost (which will primarily be the case on standalone deployments)
+      Default: 'mongodb' */
+      host: 'mongodb',
 
       /* Default port: 27017 */
       port: 27017,
@@ -52,8 +56,8 @@ module.exports = {
       name: 'tanglemonitor',
       /* Set the credentiols to access the MongoDB instance */
       credentials: {
-        user: '',
-        password: ''
+        user: 'docker',
+        password: 'v3ry53cur3p455w0rd'
       }
     }
   },
