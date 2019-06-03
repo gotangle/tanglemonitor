@@ -10,19 +10,19 @@ _Visualization and detailed live metrics of the IOTA confirmation process._
 
 First get sure you have the required programs installed:
 
-```shell
+```console
 sudo apt-get install git nodejs
 ```
 
 Within your desired folder clone this git repository:
 
-```shell
+```console
 git clone https://github.com/unioproject/tanglemonitor.git
 ```
 
 Then go into the backend folder and install the NodeJS backend:
 
-```shell
+```console
 cd tanglemonitor/backend
 npm install
 ```
@@ -31,13 +31,13 @@ npm install
 
 That's it, now you can start Tanglemonitor:
 
-```shell
+```console
 nodejs tanglemonitor-server.js --net mainnet
 ```
 
 or simply ..
 
-```shell
+```console
 nodejs tanglemonitor-server.js
 ```
 
@@ -50,26 +50,26 @@ nodejs tanglemonitor-server.js
 If you intend to run Tanglemonitor as a service or several nets simultaneously, it is recommended to run it via a process manager, like pm2:  
 Simply install it via:
 
-```shell
+```console
 sudo npm install pm2 -g
 pm2 completion install
 ```
 
 Go into the `backend` folder and run:
 
-```shell
+```console
 pm2 start tanglemonitor-server.js
 ```
 
 Setting flags in pm2 is a bit different to normal NodeJS (note the double dash):
 
-```shell
+```console
 pm2 start tanglemonitor-server.js -- --net mainnet
 ```
 
 You can stop it again with:
 
-```shell
+```console
 pm2 stop tanglemonitor-server
 ```
 
