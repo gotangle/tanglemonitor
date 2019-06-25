@@ -46,7 +46,10 @@ module.exports = {
         settings.subdomain !== '' ? settings.subdomain + '.' : ''
       }${config.webServer.domain}${config.webServer.standalone ? ':' + config.webServer.port : ''}`;
 
-      res.header('Access-Control-Allow-Origin', domainString);
+      res.header(
+        'Access-Control-Allow-Origin',
+        config.webServer.domain === '*' ? '*' : domainString
+      );
       next();
     });
 

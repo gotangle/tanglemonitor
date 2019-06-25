@@ -39,8 +39,11 @@ module.exports = {
       const domainString = `http${settings.socketioServer.ssl ? 's' : ''}://${
         settings.subdomain !== '' ? settings.subdomain + '.' : ''
       }${config.webServer.domain}${config.webServer.standalone ? ':' + config.webServer.port : ''}`;
-      console.log('domainString', domainString);
-      res.header('Access-Control-Allow-Origin', domainString);
+      //console.log('domainString', domainString);
+      res.header(
+        'Access-Control-Allow-Origin',
+        config.webServer.domain === '*' ? '*' : domainString
+      );
       res.header('Access-Control-Allow-Credentials', true);
 
       next();
