@@ -2,10 +2,6 @@
 /* global window, document, _, tangleview */
 'use strict';
 
-// Set environment according to current deployment
-const host = window.location.hostname;
-const hostProtocol = window.location.protocol;
-
 // Set canvas and dimensions
 const c = document.getElementById('canvas');
 const ctx = c.getContext('2d');
@@ -73,7 +69,7 @@ let timer = [];
 let rateLimiter = 0;
 let txOfMousePosition = {};
 
-const tangle = new tangleview({ host: host, ssl: hostProtocol === 'https:' ? true : false });
+const tangle = new tangleview({});
 
 const ChangeAddress = () => {
   selectedAddress = document.getElementById('address_input').value.substring(0, 81);
