@@ -2,11 +2,11 @@
   "printWidth": 100,
   "singleQuote": true,
   "overrides": [
-  {
-    "files": "*.js",
-    "options": {
-      "parser": "flow"
+    {
+      "files": "*.js",
+      "options": {
+        "parser": "flow"
+      }
     }
-  }
-]
+  ]
 }

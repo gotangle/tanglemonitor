@@ -1,13 +1,13 @@
 {
   "extends": ["eslint:recommended"],
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 9,
     "sourceType": "script",
     "ecmaFeatures": {
       "impliedStrict": true
     }
   },
-  "env": {},
+  "env": { "es6": true },
   "rules": {
     "quotes": ["error", "single", { "avoidEscape": true }]
   }

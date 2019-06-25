@@ -1,14 +1,10 @@
 /*eslint no-console: ["error", { allow: ["log", "error"] }] */
-/* global window, document, io, fetch, console, _, loki */
+/* global window, document, _, tangleview */
 'use strict';
 
 // Set environment according to current deployment
-const host = window.location.hostname;
-const hostProtocol = window.location.protocol;
-
-// Initialize DB
-let db = new loki('txHistory');
-let txHistory;
+//const host = window.location.hostname;
+//const hostProtocol = window.location.protocol;
 
 // Set canvas and dimensions
 const c = document.getElementById('canvas');
@@ -33,7 +29,6 @@ const fontSizeHeader = '13px';
 const fontSizeAxis = '11px';
 let txAmountToPoll = 15000;
 let maxTransactions = 15000;
-let websocketActive = false;
 
 const coordinator = 'EQSAUZXULTTYZCLNJNTXQTQHOMOFZERHTCG';
 
@@ -70,7 +65,6 @@ let toplistAdditional = 0;
 let topListCount = 15;
 let toplistSortIndex = [2, 'desc'];
 let toplistMinTX = 1;
-let InitialHistoryPollRetries = 10;
 
 let mousePos;
 let pixelMap = [];
@@ -78,6 +72,8 @@ let pixelMap = [];
 let timer = [];
 let rateLimiter = 0;
 let txOfMousePosition = {};
+
+const tangle = new tangleview({ host: 'localhost', ssl: false });
 
 const ChangeAddress = () => {
   selectedAddress = document.getElementById('address_input').value.substring(0, 81);
@@ -99,10 +95,6 @@ const updateMetrics = (totalTPS, totalCTPS, totalConfRate, totalConfirmationTime
     document.getElementById('metric_totalConfirmationTime').innerHTML = totalConfirmationTime;
 }
 */
-
-const getRndInteger = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
 
 const getRowPosition = el => {
   el = el.getBoundingClientRect();
@@ -614,7 +606,7 @@ document.getElementById('txToPollWrapper_button').addEventListener(
     document.getElementById('loadingTX').classList.add('inline_block');
     manualPoll = true;
     maxTransactions = txAmountToPoll;
-    InitialHistoryPoll(false);
+    //InitialHistoryPoll(false);
   },
   false
 );
@@ -625,39 +617,8 @@ const calcLineCount = (i, pxSize, cWidth) => {
   return lines;
 };
 
-// Update conf and milestone status on local DB
-const UpdateTXStatus = (update, updateType) => {
-  const txHash = update.hash;
-  const milestoneType = update.milestone;
-  const confirmationTime = update.ctime;
-
-  // Find TX by unique index "hash" (Utilizing LokiJS binary index performance)
-  const txToUpdate = txHistory.by('hash', txHash);
-
-  if (txToUpdate) {
-    if (updateType === 'txConfirmed' || updateType === 'Milestone') {
-      txToUpdate.ctime = confirmationTime;
-      txToUpdate.confirmed = true;
-    }
-    if (updateType === 'Milestone') {
-      txToUpdate.milestone = milestoneType;
-    }
-    if (updateType === 'Reattach') {
-      txToUpdate.reattached = true;
-    }
-
-    txHistory.update(txToUpdate);
-  } else {
-    console.log(
-      `LokiJS: ${
-        updateType === 'Milestone' ? 'Milestone' : 'TX'
-      } not found in local DB - Hash: ${txHash} | updateType: ${updateType}`
-    );
-  }
-};
-
 // Draw canvas iteration
-const drawGraph = params => {
+const drawGraph = async params => {
   // Clear screen on each tick
   ctx.clearRect(0, 0, cWidth + offsetWidth, c.height);
 
@@ -668,21 +629,6 @@ const drawGraph = params => {
 
   // Create array of transaction pixels including respective confirmation status
   let pxls = [];
-
-  // Get all current TX in DB and update global txList
-  // Optionally filter according to user settings
-  txList = txHistory
-    .chain()
-    .find({
-      $and: [
-        filterForValueTX ? { value: { $ne: 0 } } : {},
-        filterForSpecificAddresses.length > 0
-          ? { address: { $nin: filterForSpecificAddresses } }
-          : {}
-      ]
-    })
-    .simplesort('receivedAt') //  { useJavascriptSorting: true }
-    .data();
 
   // Create header metrics and legend labels
   ctx.font = `${fontSizeHeader} ${fontFace}`;
@@ -715,6 +661,20 @@ const drawGraph = params => {
   ctx.fillRect(cWidth + 25, 25, pxSize, pxSize);
   ctx.fillStyle = 'rgba(244,65,205,1)';
   ctx.fillRect(cWidth - 75, 40 + 5, 15, 3);
+
+  // Get all current TX in DB and update global txList
+  // Optionally filter according to user settings
+  txList = await tangle.find(
+    {
+      $and: [
+        filterForValueTX ? { value: { $ne: 0 } } : {},
+        filterForSpecificAddresses.length > 0
+          ? { address: { $nin: filterForSpecificAddresses } }
+          : {}
+      ]
+    },
+    { sort: 'receivedAt' }
+  );
 
   //  Draw TX pixels and additional metrics
   const pxlConstructor = (px, pixelIndex) => {
@@ -982,7 +942,7 @@ const CalcToplist = initial => {
   }
 };
 
-const CalcMetricsSummary = () => {
+const CalcMetricsSummary = async () => {
   const now = Date.now();
   // Reset milestone interval buffer
   milestoneMetrics = [];
@@ -993,11 +953,16 @@ const CalcMetricsSummary = () => {
   // Restrict max TX to display => "Cut out" oldest line of TXs
   if (totalTransactions >= maxTransactions) {
     const multiplicator = Math.floor(totalTransactions / maxTransactions);
+    tangle.remove(filterForValueTX ? { value: { $ne: 0 } } : {}, {
+      limit: txPerLine * multiplicator
+    });
+    /*
     txHistory
       .chain()
       .find(filterForValueTX ? { value: { $ne: 0 } } : {})
       .limit(txPerLine * multiplicator)
       .remove();
+      */
   }
 
   // Do this on every 100 or x amount of TX
@@ -1095,6 +1060,7 @@ const CalcMetricsSummary = () => {
 };
 
 // Fetch recent TX history from local or remote backend
+/*
 const InitialHistoryPoll = firstLoad => {
   const apiUrl = `${hostProtocol}//${host}:4433/api/v1/getRecentTransactions?amount=${txAmountToPoll}`;
 
@@ -1105,17 +1071,6 @@ const InitialHistoryPoll = firstLoad => {
       document.getElementById('loadingTX').classList.add('hide');
       document.getElementById('loadingTX').classList.remove('inline_block');
 
-      // Store fetched TX history in local DB
-      txList = fetchedListJSON.txHistory ? fetchedListJSON.txHistory : [];
-      if (txHistory) db.removeCollection('txHistory');
-
-      txHistory = db.addCollection('txHistory', {
-        unique: ['hash'],
-        indices: ['address', 'bundle', 'receivedAt']
-      });
-
-      txHistory.insert(txList);
-
       if (firstLoad) {
         // Initialize graph render loop
         drawGraph({ loop: true });
@@ -1123,12 +1078,6 @@ const InitialHistoryPoll = firstLoad => {
         CalcMetricsSummary();
         // Initialize toplist calculation loop
         CalcToplist(true);
-      }
-      // After polling of history is finished init websocket (on first load)
-      if (firstLoad && !websocketActive) {
-        InitWebSocket();
-      } else if (websocketActive) {
-        console.log('WebSocket already initialized');
       }
     })
     .catch(e => {
@@ -1139,104 +1088,20 @@ const InitialHistoryPoll = firstLoad => {
       }
     });
 };
-
-// Init Websocket for client
-const InitWebSocket = () => {
-  if (!websocketActive) {
-    websocketActive = true;
-
-    const webSocketUrl = `${hostProtocol}//${host}:4434`;
-
-    const socket = io.connect(
-      webSocketUrl,
-      { secure: hostProtocol === 'https:' ? true : false, reconnection: false }
-    );
-
-    socket.on('connect', () => {
-      console.log(`Successfully connected to Websocket.. [websocketActive: ${websocketActive}]`);
-
-      socket.on('newTX', newTX => {
-        let filterCriteria = [true];
-
-        if (!filterCriteria.includes(false)) {
-          /*
-          Set timestamp on client locally
-          newTX.receivedAtms = parseInt(Date.now());
-          */
-          txList.push(newTX);
-
-          try {
-            txHistory.insert(newTX);
-          } catch (e) {
-            //error = true;
-            console.log(e);
-          }
-        }
-      });
-      socket.on('update', update => {
-        UpdateTXStatus(update, 'txConfirmed');
-      });
-      socket.on('updateMilestone', updateMilestone => {
-        UpdateTXStatus(updateMilestone, 'Milestone');
-      });
-      socket.on('updateReattach', updateReattach => {
-        UpdateTXStatus(updateReattach, 'Reattach');
-      });
-
-      socket.on('disconnect', reason => {
-        console.log(`WebSocket disconnect [${reason}]`);
-        websocketActive = false;
-        socket.close();
-
-        window.setTimeout(() => {
-          InitWebSocket();
-          console.log('WebSocket reconnecting...');
-        }, getRndInteger(100, 1000));
-      });
-
-      socket.on('reconnect', attemptNumber => {
-        console.log(`WebSocket reconnect [${attemptNumber}]`);
-      });
-
-      socket.on('reconnect_error', error => {
-        console.log(`WebSocket reconnect_error [${error}]`);
-        websocketActive = false;
-        window.setTimeout(() => {
-          InitWebSocket();
-        }, getRndInteger(10, 100));
-      });
-
-      socket.on('connect_timeout', timeout => {
-        console.log(`WebSocket connect_timeout [${timeout}]`);
-        websocketActive = false;
-        window.setTimeout(() => {
-          InitWebSocket();
-        }, getRndInteger(10, 100));
-      });
-
-      socket.on('error', error => {
-        console.log(`WebSocket error [${error}]`);
-      });
-
-      socket.on('connect_error', error => {
-        console.log(`WebSocket connect_error [${error}]`);
-        websocketActive = false;
-        window.setTimeout(() => {
-          InitWebSocket();
-        }, getRndInteger(10, 100));
-      });
-
-      // Ensure socket gets closed before exiting the session
-      window.addEventListener('beforeunload', () => {
-        socket.close();
-      });
-    });
-  }
-};
-
+*/
 const Main = () => {
   // Fetch history initialy
-  InitialHistoryPoll(true);
+  //InitialHistoryPoll(true);
+  // Initialize graph render loop
+  drawGraph({ loop: true });
+  // Initialize metrics calculation loop
+  CalcMetricsSummary();
+  // Initialize toplist calculation loop
+  CalcToplist(true);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('loadingTX').classList.add('hide');
+  document.getElementById('loadingTX').classList.remove('inline_block');
 };
 // Init
 Main();
