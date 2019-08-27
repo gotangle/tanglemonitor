@@ -810,7 +810,16 @@ const drawGraph = async params => {
 
   // Store current pixelmap in global variable for TX polling [on mousover => GetTXofMousePosition()]
   pixelMap = pxls;
-  if (params.loop) window.setTimeout(() => drawGraph({ loop: true }), tickRate);
+
+  // Determine if
+  const txListInitialized = txList.length > 0 ? true : false;
+
+  // Initialize toplist calculation loop once, but only if txList has content
+  if (params.initial && txListInitialized) CalcToplist(true);
+
+  // Draws graph in the interval of "tickRate", also make sure "initial" flag is only set once, hence the invertion of txListInitialized
+  if (params.loop)
+    window.setTimeout(() => drawGraph({ loop: true, initial: !txListInitialized }), tickRate);
 };
 
 const CalcToplist = initial => {
@@ -1086,14 +1095,10 @@ const InitialHistoryPoll = firstLoad => {
 };
 */
 const Main = () => {
-  // Fetch history initialy
-  //InitialHistoryPoll(true);
   // Initialize graph render loop
-  drawGraph({ loop: true });
+  drawGraph({ loop: true, initial: true });
   // Initialize metrics calculation loop
   CalcMetricsSummary();
-  // Initialize toplist calculation loop
-  CalcToplist(true);
 
   document.getElementById('loading').style.display = 'none';
   document.getElementById('loadingTX').classList.add('hide');
